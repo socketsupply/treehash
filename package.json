@@ -1,0 +1,15 @@
+{
+  "name": "treehash",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pull-stream": "^3.6.14",
+    "stream-to-pull-stream": "^1.7.3"
+  }
+}
