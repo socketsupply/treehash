@@ -1,6 +1,4 @@
 'use strict'
-var pull = require('pull-stream')
-var toPull = require('stream-to-pull-stream')
 var crypto = require('crypto')
 
 var empty = Buffer.from('')
