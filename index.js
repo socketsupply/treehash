@@ -50,7 +50,8 @@ class TreeHash  {
         update(this.queue, this.tree)
         this.queue = []; this.len = 0
       }
-    }    
+    }
+    return this
   }
   digest () {
       this.ended = true
