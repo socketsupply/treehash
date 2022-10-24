@@ -1,16 +1,14 @@
 {
-  "name": "treehash",
+  "name": "@socketsupply/treehash",
   "version": "1.0.0",
-  "description": "",
+  "description": "compute tree hash of a large file / stream",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pull-stream": "^3.6.14",
-    "stream-to-pull-stream": "^1.7.3"
   },
   "devDependencies": {
     "tape": "^5.6.1"
