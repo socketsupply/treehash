@@ -16,7 +16,7 @@ var vectors = [
   {
     //on a short input, the result is just the sha256 hash
     input: 'hello world',
-    hash: hash('hello world').toString('hex')
+    hash: hash('hello world')
   },
   {
     input: Buffer.alloc(1024*1024*2).fill(0),
@@ -68,8 +68,42 @@ test('extend', function (t) {
     var th = new TreeHash
     var first = th.update(input.slice(0, mid)).digest()
     t.notDeepEqual(first, hash)
-    var second = th.update(input.slice(1, mid)).digest()
-    t.deepEqual(first, hash)
+    var second = th.update(input.slice(mid)).digest()
+    t.deepEqual(second, hash)
   }
+  t.end()
 
 })
+
+test('verify', function (t) {
+
+  var ht = new TreeHash()
+  ht.update(zeros_1mb)
+  t.deepEqual(ht.verify([hash(zeros_1mb)]), new TreeHash().update(zeros_1mb).update(zeros_1mb).digest())
+
+  ht.update(zeros_1mb)
+  t.deepEqual(ht.verify([
+    hash(hash(zeros_1mb), hash(zeros_1mb))
+  ]), new TreeHash().update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).digest())
+
+  ht.update(zeros_1mb)
+  t.deepEqual(ht.verify([
+    hash(zeros_1mb)
+  ]), new TreeHash().update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).digest())
+
+
+  t.deepEqual(ht.verify([
+    hash(zeros_1mb),
+    hash(
+      hash(hash(zeros_1mb), hash(zeros_1mb)),
+      hash(hash(zeros_1mb), hash(zeros_1mb))
+    )
+  ]), new TreeHash()
+      .update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).update(zeros_1mb)
+      .update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).update(zeros_1mb)
+    .digest())
+
+
+  t.end()
+})
+
