@@ -13,20 +13,43 @@ function hash (a, b='') {
   return crypto.createHash('sha256').update(a).update(b).digest()
 }
 
-function update(_h, tree) {
+function update(h, tree) {
   var i = 0
+  while(tree[i]) {
+    h = hash(tree[i], h)
+    tree[i] = null
+    i++
+  }
+  tree[i] = h
+}
 
-  do {
-    if(tree[i]) {
-      _h = hash(tree[i], _h)
+// verify is the same as update,
+// but applies a repeated series of hashes (aka, the proof)
+// while incrementing the index.
+function verify(proof, tree) {
+  var i = 0
+  var h
+  while(h = proof.shift()) {
+    while(tree[i]) {
+      h = hash(tree[i], h)
       tree[i] = null
       i++
     }
-    else {
-      tree[i] = _h
-      break;
-    }
-  } while(true)
+    tree[i] = h
+  }
+  return tree
+}
+
+
+function digest (tree) {
+   return tree.filter(Boolean).reduce((a, b) => {
+      //the tree array is the most recent branches of the tree
+      //at the end, there may be null items, representing full subtrees
+      //if there are single hashes at the end of the tree,
+      //they are promoted to the next level. but we are iterating over the array from the lower levels
+      //so b is the earlier hash, a is the new hash, promoted, so hash(b, a)
+      return hash(b, a)
+  })
 }
 
 class TreeHash  {
@@ -53,20 +76,16 @@ class TreeHash  {
     }
     return this
   }
+  verify (proof) {
+    return digest(verify(proof, this.tree.slice()))
+  }
   digest () {
-     var tree = this.tree.slice()
-     if(this.queue.length) {
-        //update a partial block, but do not clear the block incase more data is added later
-        update(hash(this.queue), tree)
-      }
-     return tree.filter(Boolean).reduce((a, b) => {
-        //the tree array is the most recent branches of the tree
-        //at the end, there may be null items, representing full subtrees
-        //if there are single hashes at the end of the tree,
-        //they are promoted to the next level. but we are iterating over the array from the lower levels
-        //so b is the earlier hash, a is the new hash, promoted, so hash(b, a)
-        return hash(b, a)
-    })
+    var tree = this.tree.slice()
+    if(this.queue.length) {
+      //update a partial block, but do not clear the block incase more data is added later
+      update(hash(this.queue), tree)
+    }
+    return digest(tree)
   }
 }
 
