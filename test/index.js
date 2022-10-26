@@ -11,7 +11,7 @@ var zeros_1mb = Buffer.alloc(1024*1024).fill(0)
 var vectors = [
   {
     input: 'test',
-    hash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
+    hash: Buffer.from('9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'hex')
   },
   {
     //on a short input, the result is just the sha256 hash
@@ -20,7 +20,7 @@ var vectors = [
   },
   {
     input: Buffer.alloc(1024*1024*2).fill(0),
-    hash: '861890b487038d840e9d71d43bbc0fd4571453fb9d9b1f370caa3582a29b0ec7'
+    hash: Buffer.from('861890b487038d840e9d71d43bbc0fd4571453fb9d9b1f370caa3582a29b0ec7', 'hex')
   },
   {
     input: Buffer.alloc(1024*1024*2).fill(0),
@@ -58,4 +58,18 @@ test('vectors', function (t) {
     t.deepEqual(new TreeHash().update(vectors[i].input).digest(), Buffer.from(vectors[i].hash, 'hex'))
   }
   t.end()
+})
+
+test('extend', function (t) {
+  for(var i = 0 ; i < vectors.length; i++) {
+    var {input, hash} = vectors[i]
+    input = Buffer.from(input)
+    var mid = 1 + ~~(Math.random()*(input.length-2))
+    var th = new TreeHash
+    var first = th.update(input.slice(0, mid)).digest()
+    t.notDeepEqual(first, hash)
+    var second = th.update(input.slice(1, mid)).digest()
+    t.deepEqual(first, hash)
+  }
+
 })
