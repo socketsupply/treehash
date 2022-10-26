@@ -4,15 +4,18 @@ var crypto = require('crypto')
 var empty = Buffer.from('')
 
 function hash (a, b='') {
+  if(Array.isArray(a)) {
+    var h = crypto.createHash('sha256') 
+    for(var i = 0; i < a.length; i++)
+      h.update(a[i])
+    return h.digest()
+  }
   return crypto.createHash('sha256').update(a).update(b).digest()
 }
 
-function update(block, tree) {
-  var h = crypto.createHash('sha256')
-  for(var i = 0; i < block.length; i++)
-    h.update(block[i])
-  
-  var i = 0, _h = h.digest()
+function update(_h, tree) {
+  var i = 0
+
   do {
     if(tree[i]) {
       _h = hash(tree[i], _h)
@@ -35,7 +38,6 @@ class TreeHash  {
   }
   update (data) {
     //XXX TODO, actually, we want to be able to add more data, so that streaming files are possible...
-    if(this.ended) throw new Error('cannot add more data already hashed tree')
     while(data.length) {
       if(this.len + data.length < this.block_size) {
         this.queue.push(data)
@@ -45,20 +47,19 @@ class TreeHash  {
       else {
         this.queue.push(data.slice(0, this.block_size - this.len))
         data = data.slice(this.block_size - this.len)
-        update(this.queue, this.tree)
+        update(hash(this.queue), this.tree)
         this.queue = []; this.len = 0
       }
     }
     return this
   }
   digest () {
-      this.ended = true
-    
+     var tree = this.tree.slice()
      if(this.queue.length) {
-        update(this.queue, this.tree)
-        this.queue = []
+        //update a partial block, but do not clear the block incase more data is added later
+        update(hash(this.queue), tree)
       }
-     return this.tree.filter(Boolean).reduce((a, b) => {
+     return tree.filter(Boolean).reduce((a, b) => {
         //the tree array is the most recent branches of the tree
         //at the end, there may be null items, representing full subtrees
         //if there are single hashes at the end of the tree,
