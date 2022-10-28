@@ -75,17 +75,50 @@ test('extend', function (t) {
 
 })
 
+/*
+  branch numbering:
+  leaves are odd,
+  branches are even
+
+        1
+       /
+      2
+     / \ 
+    /   3
+   /
+  4
+   \
+    ...
+
+  the leaves are the hashes of the blocks.
+  the branches are the possible tree hashes
+  if we have just one block, out of 2, and we know the root hash (2)
+  then having leaf hash 3 is proof that 1 is part of 2 because 2 == hash(1, 3)
+  
+
+*/
 test('verify', function (t) {
 
   var ht = new TreeHash()
+  //leaf 1, 
+  // prove 1 in 2
   ht.update(zeros_1mb)
   t.deepEqual(ht.verify([hash(zeros_1mb)]), new TreeHash().update(zeros_1mb).update(zeros_1mb).digest())
 
   ht.update(zeros_1mb)
+
+  //prove 2 in 3
+  t.deepEqual(ht.verify([
+    hash(zeros_1mb), 
+  ]), new TreeHash().update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).digest())
+
+  //prove 2 in 4
   t.deepEqual(ht.verify([
     hash(hash(zeros_1mb), hash(zeros_1mb))
   ]), new TreeHash().update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).update(zeros_1mb).digest())
 
+
+  //prove 3 in 4
   ht.update(zeros_1mb)
   t.deepEqual(ht.verify([
     hash(zeros_1mb)
@@ -104,6 +137,49 @@ test('verify', function (t) {
     .digest())
 
 
+  t.end()
+})
+var u = require('../util')
+
+//get the index of the top hash, givin a maximum leaf
+test('top', function (t) {
+  var inputs = [
+    [1, 1],
+    [3, 2],
+    [7, 4],
+    [5, 4],
+    [9, 8],
+    [11, 8],
+    [13, 8],
+    [15, 8]
+  ]
+
+  for(var i in inputs) {
+    t.equal(u.rootIndex(inputs[i][0]), inputs[i][1])
+  }
+  t.end()
+})
+
+test('proof', function (t) {
+  console.log(u.uncles(1+1, 1))
+  console.log(u.uncles(3+1, 1))
+  console.log(u.uncles(5+1, 1))
+  console.log(u.uncles(7+1, 1))
+
+  console.log(u.uncles(3+1, 3))
+  console.log(u.uncles(5+1, 3))
+  console.log(u.uncles(7+1, 3))
+
+  console.log(u.uncles(7+1, 5))
+
+  return t.end()
+
+  for(var i = 0; i < 16; i++) {
+    for(var j = i + 1; j < 16; j++) {
+      console.log(u.uncles(j+1, i))
+//  console.log(u.uncles(5+1, 1))
+  //console.log(u.uncles(7+1, 1))
+  }}
   t.end()
 })
 
