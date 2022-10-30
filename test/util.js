@@ -1,6 +1,30 @@
 
 var u = require('../util')
 var test = require('tape')
+var {collect, collect_end} = u
+
+var u = require('../util')
+
+//get the index of the top hash, givin a maximum leaf
+test('top', function (t) {
+  var inputs = [
+    [1, 1],
+    [3, 2],
+    [7, 4],
+    [5, 4],
+    [9, 8],
+    [11, 8],
+    [13, 8],
+    [15, 8]
+  ]
+
+  for(var i in inputs) {
+    //t.equal(u.rootIndex(inputs[i][0]), inputs[i][1])
+    t.equal(u.root(inputs[i][0]), inputs[i][1])
+  }
+  t.end()
+})
+
 
 test('evenness', function (t) {
 
@@ -27,48 +51,6 @@ test('evenness', function (t) {
 
   t.end()
 })
-
-function collect_branch (start, max, include_end) {
-  var a = []
-  var _start
-  console.log("COLLECT_BRANCH", start, max)
-  var h = 0
-  while(((u.height(start) + 1) == (h + 1)) && start <= max && (include_end ? true : max >= u.end(start))) {
-    console.log(".", start, u.height(start), h,
-      [u.height(start) + 1, (h + 1)]
-    )
-    a.push(start)
-    _start = start
-    start += (1 << h)
-    h ++
-  }
-  
-  console.log('branch', _start, a)
-  return _start
-}
-
-function collect_end (start, max) {
-  var a = []
-  while(start <= max) {
-    var b = collect_branch(start, max, true)
-    a.push(b)
-    //get the next item
-    start = u.end(b) + 2 // + (1 << u.evenness(b)) + 1 
-  }
-  return a
-}
-
-function collect (start, max) {
-  var a = []
-  while(start <= max) {
-    var b = collect_branch(start, max, false)
-    a.push(b)
-    //get the next item
-    start = u.end(b) + 2// + (1 << u.evenness(b)) + 1
-  }
-  return a
-}
-
 
 //function that returns the index of the first leaf in the branch
 test('start: return first leaf in branch', function (t) {
@@ -125,5 +107,9 @@ test('collect', function (t) {
   t.deepEqual(collect(3, 5), [3, 5])
   t.deepEqual(collect(3, 15), [3, 6, 12])
 
+  t.deepEqual(collect(1, 3), [2])
+  t.deepEqual(collect(3, 5), [3, 5])
+
   t.end()
 })
+
