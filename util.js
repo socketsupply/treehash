@@ -9,17 +9,9 @@
 // 2 is an even number, it represents a branch
 // 2's branch is one level above the leaves, because 2/2 is odd
 // 4 is a 2nd level branch, because 4 / 2 is still even.
-/*
-function height (n) {
-  var f = 0
-  if(n == 0) return 0 //or -1 ???
-  while(!(n & 1)) {
-    f++; n = n >> 1
-  }
-  return f
-}*/
+
 //oh evenness is the same idea as height
-function evenness (n) {
+function height (n) {
   var i = 0
   while(n && (n & 1) == 0) {
     i ++
@@ -27,59 +19,12 @@ function evenness (n) {
   }
   return i
 }
-
-var height = evenness
-
-function rootIndex (length) {
-  var i = 1
-  length --
-  if(length < 0) return 0
-  while(length >>= 1) i <<= 1
-  return i
-}
-
-function firstChild (n) {
-  if(n%2) return n
-  var d = 1 << (height(n) - 1)
-  return n - d
-}
-
-function belongs (n) {
-  n = +n
-  var d = 1 << height(n)
-  //handle powers of 2
-  if(n - d === 0) return n << 1
-  return height(n - d) < height(n + d) ? n - d : n + d
-}
-
-function father (i, l) {
-  var j = belongs(i)
-  while(j >= l) {
-    j = belongs(j)
-  }
-  return j
-}
-
-function brother (i, j, l) {
-  var generation = 1 << (height(j) - 1)
-  var other = j < i ? j - generation : j + generation
-  while(other >= l) {
-    other = firstChild(other)
-  }
-  return other
-}
+var evenness = height
 
 
-function uncles (l, i) {
-  var uncles = []
-  var j
-  var root = rootIndex(l)
-  if(!root) return []
-  while(i !== root) {
-    uncles.push(brother(i, j = father(i, l), l))
-    i = j
-  }
-  return uncles
+//find the base of the whole tree
+function root (length) {
+  return collect_branch(1, length, true)
 }
 
 function start (branch) {
@@ -90,4 +35,49 @@ function end (branch) {
   return branch + (1 << height(branch)) - 1
 }
 
-module.exports = { uncles, rootIndex, height, evenness, start, end}
+/*
+  methods to gather the branches/leaves required to make a proof
+
+  collect branch finds the highest branch within a range for one step of the proof.
+  if include_end == true, then any trailing hashes are promoted.
+  I expect the usual case is streaming files to the end, so this will be the usual case.
+
+  but sometimes you want to seek within files, so you need a proof of the start.
+*/
+
+function collect_branch (start, max, include_end) {
+  var _start
+  var h = 0
+  while((height(start) == h) && start <= max && (include_end ? true : max >= end(start))) {
+    _start = start
+    start += (1 << h)
+    h ++
+  }
+  
+  return _start
+}
+
+function collect_end (start, max) {
+  var a = []
+  while(start <= max) {
+    var b = collect_branch(start, max, true)
+    a.push(b)
+    //get the next item
+    start = end(b) + 2 // + (1 << u.evenness(b)) + 1 
+  }
+  return a
+}
+
+function collect (start, max) {
+  var a = []
+  while(start <= max) {
+    var b = collect_branch(start, max, false)
+    a.push(b)
+    //get the next item
+    start = end(b) + 2// + (1 << u.evenness(b)) + 1
+  }
+  return a
+}
+
+
+module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end}
