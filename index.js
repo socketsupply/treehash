@@ -1,7 +1,6 @@
 'use strict'
 var crypto = require('crypto')
-
-var empty = Buffer.from('')
+var Blocks = require('./blocks')
 
 function hash (a, b='') {
   if(Array.isArray(a)) {
@@ -52,29 +51,18 @@ function digest (tree) {
   })
 }
 
-class TreeHash  {
+class TreeHash  extends Blocks {
   constructor (block_size=1024*1024) {
-    this.block_size = block_size
-    this.len = 0
-    this.queue = []
+    super(block_size)
     this.tree = []
   }
-  update (data) {
-    //XXX TODO, actually, we want to be able to add more data, so that streaming files are possible...
-    while(data.length) {
-      if(this.len + data.length < this.block_size) {
-        this.queue.push(data)
-        this.len += data.length
-        data = empty
-      }
-      else {
-        this.queue.push(data.slice(0, this.block_size - this.len))
-        data = data.slice(this.block_size - this.len)
-        update(hash(this.queue), this.tree)
-        this.queue = []; this.len = 0
-      }
-    }
-    return this
+  updateBlock (data) {
+    this.queue.push(data)
+    this.len += data.length
+  }
+  digestBlock () {
+    update(hash(this.queue), this.tree)
+    this.queue = []; this.len = 0
   }
   verify (proof) {
     return digest(verify(proof, this.tree.slice()))
