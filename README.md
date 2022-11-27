@@ -8,4 +8,11 @@ Also, this makes streaming large files or real time video possible
 
 ## todo
 
-implement partical verification
+* implement partical verification
+
+* request a proof for any range
+
+* construct treehash from a file, tree hash at the end (because it's the first time the file has uploaded)
+
+* stream to a file, verifying as we go
+
