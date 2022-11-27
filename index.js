@@ -54,15 +54,15 @@ function digest (tree) {
 class TreeHash  extends Blocks {
   constructor (block_size=1024*1024) {
     super(block_size)
+    this.queue = []
     this.tree = []
   }
   updateBlock (data) {
     this.queue.push(data)
-    this.len += data.length
   }
   digestBlock () {
     update(hash(this.queue), this.tree)
-    this.queue = []; this.len = 0
+    this.queue = [];
   }
   verify (proof) {
     return digest(verify(proof, this.tree.slice()))

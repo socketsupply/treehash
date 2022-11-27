@@ -4,7 +4,6 @@ module.exports = class Blocks {
   constructor (block_size=1024*1024) {
     this.block_size = block_size
     this.len = 0
-    this.queue = []
   }
   updateBlock (data) {
     throw new Error('subclass must implement updateBlock')
@@ -17,13 +16,16 @@ module.exports = class Blocks {
     while(data.length) {
       if(this.len + data.length < this.block_size) {
         this.updateBlock(data)
+        this.len += data.length
         data = empty
       }
       else {
         var _len = this.len
         this.updateBlock(data.slice(0, this.block_size - this.len))
+        this.len += data.length
         data = data.slice(this.block_size - _len)
         this.digestBlock()
+        this.len = 0
       }
     }
     return this
