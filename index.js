@@ -2,6 +2,12 @@
 var crypto = require('crypto')
 var Blocks = require('./blocks')
 
+/**
+ * TreeHash - this module implements a running treehash
+ *            it maintains enough data to calculate the root hash of a streaming file 
+ *            and to verify new blocks as they arrive.
+ */
+
 function hash (a, b='') {
   if(Array.isArray(a)) {
     var h = crypto.createHash('sha256') 
@@ -14,8 +20,10 @@ function hash (a, b='') {
 
 function update(h, tree) {
   var i = 0
+  console.log('update', h, tree)
   while(tree[i]) {
     h = hash(tree[i], h)
+    console.log(h)
     tree[i] = null
     i++
   }
@@ -61,7 +69,9 @@ class TreeHash  extends Blocks {
     this.queue.push(data)
   }
   digestBlock () {
-    update(hash(this.queue), this.tree)
+    var h
+    update(h = hash(this.queue), this.tree)
+    console.log(h)
     this.queue = [];
   }
   verify (proof) {
@@ -70,6 +80,7 @@ class TreeHash  extends Blocks {
   digest () {
     var tree = this.tree.slice()
     if(this.queue.length) {
+      console.log('remainder', this.queue.length, hash(this.queue))
       //update a partial block, but do not clear the block incase more data is added later
       update(hash(this.queue), tree)
     }
