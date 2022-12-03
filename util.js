@@ -27,10 +27,12 @@ function root (length) {
   return collect_branch(1, length, true)
 }
 
+//get index of first hash under branch
 function start (branch) {
   return branch - (1 << height(branch)) + 1
 }
 
+//get index of last hash under branch
 function end (branch) {
   return branch + (1 << height(branch)) - 1
 }
@@ -79,5 +81,25 @@ function collect (start, max) {
   return a
 }
 
+function very_next_branch (i) {
+  return i + (1 << (height(i)-1))
+}
+//calculate the next branch, but taking into account if the tree doesn't include it,
+//and so a branch from the previous level gets promoted.
+function next_branch(i, length) {
+  var h = height(i)
+  console.log('next_branch', i, h)
+  if(length > i + (1 << h) )
+    return i + (1 << h)
+  var t = very_next_branch(i)
+  h--
+  while(t + 1 > length) {
+    console.log("T", t)
+    h --
+    t = t - (1 << h)
+  }
+  return t
 
-module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end}
+}
+
+module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end, next_branch, very_next_branch}
