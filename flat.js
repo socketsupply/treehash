@@ -23,7 +23,9 @@ class TreeHashFlat extends Blocks{
   }
   maybeDigest (i) {
     var h = height(i)
+    //check if this is a branch between two nodes (height!=0) and if we don't have a value for it.
     if(h && !this.tree[i]) {
+      //check we have the values to the left and right
       if(this.tree[i-h] && this.tree[i+h]) {
         this.tree[i] = hash(this.tree[i+h], this.tree[i-h])
         console.log(i, h,  this.tree[i-h], this.tree[i+h], '->', this.tree[i])
@@ -33,8 +35,8 @@ class TreeHashFlat extends Blocks{
   digestBlock () {
     this.tree[this.index] = hash(this.queue)
 
-    console.log("DIGEST BLOCK", this.index, this.tree[this.index])
-    this.maybeDigest(this.index-1)
+//    console.log("DIGEST BLOCK", this.index, this.tree[this.index])
+//    this.maybeDigest(this.index-1)
 //    this.maybeDigest(this.index+1)
     this.index += 2
     this.queue = [];
@@ -45,6 +47,26 @@ class TreeHashFlat extends Blocks{
 
   proof () {}
 
+  getNextBranch (i) {
+    var h = height(i)
+    console.log("GET NEXT BRANCH", i, h)
+    while(this.tree.length < i+h)
+      h --
+    console.log("found BRANCH", h)
+    return this.tree[i+h]
+  }
+  
+
+  rehash () {
+    for(var h = 1; h < Math.sqrt(this.tree.length); h++) {
+      for(var i = 1 << h; i < this.tree.length; i += h*2) {
+          this.tree[i] = hash(this.tree[i-h], this.getNextBranch(i, h))
+      }
+      //check if this level of the tree has a straggler...
+    }
+
+  }
+
   digest () {
     if(this.queue.length) {
       var i = this.index
@@ -54,7 +76,9 @@ class TreeHashFlat extends Blocks{
       this.queue = q
       this.index = i
     }
-    console.log('digest', this.tree.length, this.tree)
+//    console.log('digest', this.tree.length, this.tree)
+    this.rehash()
+
     return this.tree[this.tree.length/2]
   }
 
