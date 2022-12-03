@@ -15,10 +15,11 @@ var th = isTree ? new TreeHashFlat() : new TreeHash()
   })
   .on('end', () => {
     if(isTree) {
-      th.digest()
+      var h = th.digest()
       for(var i = 0; i < th.tree.length; i++) {
         console.log(height(i), th.tree[i])
       }
+      console.log(h.toString('hex'))
     }
     else
       console.log(th.digest().toString('hex'))
