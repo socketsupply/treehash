@@ -82,17 +82,20 @@ function collect (start, max) {
   return a
 }
 
-function very_next_branch (i) {
+function next_branch (i) {
   return i + (1 << (height(i)-1))
 }
 //calculate the next branch, but taking into account if the tree doesn't include it,
 //and so a branch from the previous level gets promoted.
-function next_branch(i, length) {
+function prev_branch(i) {
+  return i - (1 << height(i) - 1)
+}
+function next_branch_with_promotion(i, length) {
   var h = height(i)
   //if there is enough froom for the rest of the entire tree, take the next subbranch
   if(length > end(i))
-    return very_next_branch(i)
-  var t = very_next_branch(i)
+    return next_branch(i)
+  var t = next_branch(i)
   h--
   while(t + 1 > length) {
     h --
@@ -102,4 +105,4 @@ function next_branch(i, length) {
 
 }
 
-module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end, next_branch, very_next_branch}
+module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end, next_branch_with_promotion, next_branch, prev_branch}

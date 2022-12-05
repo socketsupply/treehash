@@ -1,6 +1,6 @@
 var Blocks = require('./blocks')
 var crypto = require('crypto')
-var {height, next_branch, root} = require('./util')
+var {height, next_branch_with_promotion, prev_branch, root} = require('./util')
 
 function hash (a, b='') {
   if(Array.isArray(a)) {
@@ -51,7 +51,7 @@ class TreeHashFlat extends Blocks{
   proof () {}
 
   getNextBranch (i) {
-    return this.tree[next_branch(i, this.tree.length)]
+    return this.tree[next_branch_with_promotion(i, this.tree.length)]
   }
   
 
@@ -61,7 +61,8 @@ class TreeHashFlat extends Blocks{
     for(var h = 1; h < Math.sqrt(this.tree.length); h++) {
       for(var i = 1 << h; i < this.tree.length; i += (1 << (h+1))) {
         if(height(i) == h) {
-          this.tree[i] = hash(this.tree[i-h], this.getNextBranch(i))
+          this.tree[i] = hash(this.tree[prev_branch(i)], this.getNextBranch(i))
+          //console.log('tree['+i+']', this.tree[i], h)
         }
       }
       //check if this level of the tree has a straggler...
@@ -70,15 +71,18 @@ class TreeHashFlat extends Blocks{
   }
 
   digest () {
+    /*
     if(false && this.queue.length) {
       var i = this.index
       var q = this.queue
       this.digestBlock()
-    //reset queue and index, because this isn't a full tree yet so more blocks may be added
+      //reset queue and index, because this isn't a full tree yet so more blocks may be added
       this.queue = q
       this.index = i
     }
+    */
     this.rehash()
+    //console.log(this.tree)
     return this.tree[root(this.tree.length-1)]
   }
 

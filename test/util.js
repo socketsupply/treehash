@@ -1,7 +1,7 @@
 
 var u = require('../util')
 var test = require('tape')
-var {collect, collect_end, next_branch, very_next_branch} = u
+var {collect, collect_end, next_branch, next_branch_with_promotion} = u
 
 var u = require('../util')
 
@@ -122,21 +122,21 @@ test('collect', function (t) {
 5
 */
 test('very_next_branch', function (t) {
-  t.equal(very_next_branch(2), 3)
-  t.equal(very_next_branch(4), 6)
-  t.equal(very_next_branch(6), 7)
-  t.equal(very_next_branch(8), 12)
-  t.equal(very_next_branch(10), 11)
-  t.equal(very_next_branch(12), 14)
+  t.equal(next_branch(2), 3)
+  t.equal(next_branch(4), 6)
+  t.equal(next_branch(6), 7)
+  t.equal(next_branch(8), 12)
+  t.equal(next_branch(10), 11)
+  t.equal(next_branch(12), 14)
   t.end()
 })
 
 test('next_branch', function (t) {
-  t.equal(next_branch(2, 4), 3)
-  t.equal(next_branch(2, 6), 3)
-  t.equal(next_branch(4, 6), 5)
-  t.equal(next_branch(4, 8), 6)
-  t.equal(next_branch(8, 10), 9)
+  t.equal(next_branch_with_promotion(2, 4), 3)
+  t.equal(next_branch_with_promotion(2, 6), 3)
+  t.equal(next_branch_with_promotion(4, 6), 5)
+  t.equal(next_branch_with_promotion(4, 8), 6)
+  t.equal(next_branch_with_promotion(8, 10), 9)
   /*
   -
   1
@@ -156,6 +156,6 @@ test('next_branch', function (t) {
     14
   15
   */
-  t.equal(next_branch(8, 12), 10)
+  t.equal(next_branch_with_promotion(8, 12), 10)
   t.end()
 })
