@@ -6,6 +6,7 @@ var Blocks = require('./blocks')
  * TreeHash - this module implements a running treehash
  *            it maintains enough data to calculate the root hash of a streaming file 
  *            and to verify new blocks as they arrive.
+ *            and to create a proof that the new block creates the new hash
  */
 
 function hash (a, b='') {
