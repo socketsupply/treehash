@@ -88,13 +88,12 @@ function very_next_branch (i) {
 //and so a branch from the previous level gets promoted.
 function next_branch(i, length) {
   var h = height(i)
-  console.log('next_branch', i, h)
-  if(length > i + (1 << h) )
-    return i + (1 << h)
+  //if there is enough froom for the rest of the entire tree, take the next subbranch
+  if(length > end(i))
+    return very_next_branch(i)
   var t = very_next_branch(i)
   h--
   while(t + 1 > length) {
-    console.log("T", t)
     h --
     t = t - (1 << h)
   }
