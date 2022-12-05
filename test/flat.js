@@ -10,16 +10,12 @@ var zeros = Buffer.alloc(1024*1024)
 test('pow of 2 size trees TreeHashFlat matches TreeHash', function (t) {
   var th = new TreeHash()
   var thf = new TreeHashFlat()
-  th.update(zeros)
-  thf.update(zeros)
-  t.deepEqual(thf.digest(), th.digest())
-  th.update(zeros)
-  thf.update(zeros)
-  t.deepEqual(thf.digest(), th.digest())
-  th.update(zeros)
-  thf.update(zeros)
-  t.deepEqual(thf.digest(), th.digest())
+  for(var i = 0; i < 50; i++) {
+    th.update(zeros)
+    thf.update(zeros)
+    t.deepEqual(thf.digest(), th.digest())
 
+  }
   t.end()
 
 })
