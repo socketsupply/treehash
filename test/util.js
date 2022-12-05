@@ -133,6 +133,7 @@ test('very_next_branch', function (t) {
 
 test('next_branch', function (t) {
   t.equal(next_branch(2, 4), 3)
+  t.equal(next_branch(2, 6), 3)
   t.equal(next_branch(4, 6), 5)
   t.equal(next_branch(4, 8), 6)
   t.equal(next_branch(8, 10), 9)
