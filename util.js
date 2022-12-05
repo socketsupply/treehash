@@ -82,9 +82,16 @@ function collect (start, max) {
   return a
 }
 
+//the next branch of our parent,
+//i.e. the next branch in the tree with the same height as us.
+function next_sibling (i) {
+  return i + (1 << (height(i)+1))
+}
+
 function next_branch (i) {
   return i + (1 << (height(i)-1))
 }
+
 //calculate the next branch, but taking into account if the tree doesn't include it,
 //and so a branch from the previous level gets promoted.
 function prev_branch(i) {
@@ -105,4 +112,4 @@ function next_branch_with_promotion(i, length) {
 
 }
 
-module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end, next_branch_with_promotion, next_branch, prev_branch}
+module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end, next_branch_with_promotion, next_branch, prev_branch, next_sibling}
