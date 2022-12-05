@@ -16,3 +16,16 @@ Also, this makes streaming large files or real time video possible
 
 * stream to a file, verifying as we go
 
+## proofs
+
+files, proofs, etc
+
+we want a file. we know it's (top) hash.
+we say "give us block 1, with proof it's in <hash>"
+they send the proof and a block.
+we hash the block with the proof, and if it's right, we store the block and the proof.
+
+we can then ask for another block...
+
+the basic proof is for a sequence of blocks, and assumes you have all blocks before that.
+if you needed a proof for the start, that is different.
