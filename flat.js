@@ -1,6 +1,7 @@
 var Blocks = require('./blocks')
 var crypto = require('crypto')
-var {height} = require('./util')
+var {height, next_branch, root} = require('./util')
+
 function hash (a, b='') {
   if(Array.isArray(a)) {
     var h = crypto.createHash('sha256') 
@@ -9,6 +10,8 @@ function hash (a, b='') {
     return h.digest()
   }
   return crypto.createHash('sha256').update(a).update(b).digest()
+  //console.log('hash('+a.slice(0, 8).toString('hex')+', '+b.slice(0, 8).toString('hex')+') => '+h.slice(0, 8).toString('hex'))
+  //return h
 }
 
 class TreeHashFlat extends Blocks{
@@ -48,19 +51,18 @@ class TreeHashFlat extends Blocks{
   proof () {}
 
   getNextBranch (i) {
-    var h = height(i)
-    console.log("GET NEXT BRANCH", i, h)
-    while(this.tree.length < i+h)
-      h --
-    console.log("found BRANCH", h)
-    return this.tree[i+h]
+    return this.tree[next_branch(i, this.tree.length)]
   }
   
 
   rehash () {
+    //TODO: actually, a simpler way would be to just have functions iterated over a level,
+    //so an algorithm that looked just like the one in naive could be used.
     for(var h = 1; h < Math.sqrt(this.tree.length); h++) {
-      for(var i = 1 << h; i < this.tree.length; i += h*2) {
-          this.tree[i] = hash(this.tree[i-h], this.getNextBranch(i, h))
+      for(var i = 1 << h; i < this.tree.length; i += (1 << (h+1))) {
+        if(height(i) == h) {
+          this.tree[i] = hash(this.tree[i-h], this.getNextBranch(i))
+        }
       }
       //check if this level of the tree has a straggler...
     }
@@ -68,7 +70,7 @@ class TreeHashFlat extends Blocks{
   }
 
   digest () {
-    if(this.queue.length) {
+    if(false && this.queue.length) {
       var i = this.index
       var q = this.queue
       this.digestBlock()
@@ -76,10 +78,8 @@ class TreeHashFlat extends Blocks{
       this.queue = q
       this.index = i
     }
-//    console.log('digest', this.tree.length, this.tree)
     this.rehash()
-
-    return this.tree[this.tree.length/2]
+    return this.tree[root(this.tree.length-1)]
   }
 
 }
