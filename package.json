@@ -4,7 +4,7 @@
   "description": "compute tree hash of a large file / stream",
   "main": "index.js",
   "scripts": {
-    "test": "node test/index.js && node test/util.js"
+    "test": "node test/index.js && node test/util.js && node test/flat.js"
   },
   "author": "",
   "license": "ISC",
