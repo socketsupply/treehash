@@ -31,7 +31,10 @@ function update(h, tree) {
 
 // verify is the same as update,
 // but applies a repeated series of hashes (aka, the proof)
-// while incrementing the index.
+// instead of using the tree itself
+
+// a proof is a list of hashes that prooves that the blocks so far
+// are part of a bigger tree. TreeHashFlat should be able to return the hashes...
 function verify(proof, tree) {
   var i = 0
   var h

@@ -1,5 +1,6 @@
 var test = require('tape')
 var TreeHash = require('../')
+var TreeHashFlat = require('../flat')
 var naive = require('../naive')
 var crypto = require('crypto')
 
@@ -100,10 +101,54 @@ test('extend', function (t) {
 test('verify', function (t) {
 
   var ht = new TreeHash()
-  //leaf 1, 
+  // leaf 1, 
   // prove 1 in 2
+
   ht.update(zeros_1mb)
   t.deepEqual(ht.verify([hash(zeros_1mb)]), new TreeHash().update(zeros_1mb).update(zeros_1mb).digest())
+
+  function assert_proof(preblocks, blocks, proof) {
+    var th = new TreeHash()
+    var th2 = new TreeHash()
+    var fh = new TreeHashFlat()
+    blocks.slice(0, preblocks).forEach(block => th.update(block))
+    blocks.forEach(block => fh.update(block))
+    var th2 = new TreeHash()
+    blocks.forEach(block => th2.update(block))
+
+    t.deepEqual(th.verify(proof), th2.digest())
+    t.deepEqual(fh.proof(preblocks.length), proof)
+  }
+
+  t.deepEqual(
+    new TreeHashFlat().update(zeros_1mb).update(zeros_1mb).proof(1),
+    [hash(zeros_1mb)]
+  )
+
+  assert_proof(1, [zeros_1mb, zeros_1mb], [hash(zeros_1mb)])
+  assert_proof(2, [zeros_1mb, zeros_1mb, zeros_1mb], [hash(zeros_1mb)])
+  assert_proof(1, [zeros_1mb, zeros_1mb, zeros_1mb], [hash(zeros_1mb), hash(zeros_1mb)])
+  assert_proof(1, [zeros_1mb, zeros_1mb, zeros_1mb, zeros_1mb], [hash(zeros_1mb), hash(hash(zeros_1mb), hash(zeros_1mb))])
+  assert_proof(2, [zeros_1mb, zeros_1mb, zeros_1mb, zeros_1mb], [hash(hash(zeros_1mb), hash(zeros_1mb))])
+
+  assert_proof(3, [zeros_1mb, zeros_1mb, zeros_1mb, zeros_1mb], [hash(zeros_1mb)])
+
+
+  assert_proof(3, [
+    zeros_1mb, zeros_1mb, zeros_1mb, zeros_1mb,
+    zeros_1mb, zeros_1mb, zeros_1mb, zeros_1mb
+  ], [
+    hash(zeros_1mb),
+    hash(hash(hash(zeros_1mb), hash(zeros_1mb)),  hash(hash(zeros_1mb), hash(zeros_1mb)))
+  ])
+
+  assert_proof(5, [
+    zeros_1mb, zeros_1mb, zeros_1mb, zeros_1mb,
+    zeros_1mb, zeros_1mb, zeros_1mb, zeros_1mb
+  ], [
+    hash(zeros_1mb),  hash(hash(zeros_1mb), hash(zeros_1mb))
+  ])
+
 
   ht.update(zeros_1mb)
 

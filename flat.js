@@ -1,6 +1,6 @@
 var Blocks = require('./blocks')
 var crypto = require('crypto')
-var {height, next_branch_with_promotion, prev_branch, root, next_sibling} = require('./util')
+var {height, next_branch_with_promotion, prev_branch, root, next_sibling, collect} = require('./util')
 
 function hash (a, b='') {
   if(Array.isArray(a)) {
@@ -41,9 +41,12 @@ class TreeHashFlat extends Blocks{
     //and now hash the blocks above this block
   }
 
-  verify () {}
+  verify (start) {
+  }
 
-  proof () {}
+  proof (start) {
+    return collect(start + 2, this.tree.length).map(i => this.tree[i])
+  }
 
   getNextBranch (i) {
     return this.tree[next_branch_with_promotion(i, this.tree.length)]
