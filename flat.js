@@ -1,6 +1,6 @@
 var Blocks = require('./blocks')
 var crypto = require('crypto')
-var {height, next_branch_with_promotion, prev_branch, root} = require('./util')
+var {height, next_branch_with_promotion, prev_branch, root, next_sibling} = require('./util')
 
 function hash (a, b='') {
   if(Array.isArray(a)) {
@@ -10,8 +10,6 @@ function hash (a, b='') {
     return h.digest()
   }
   return crypto.createHash('sha256').update(a).update(b).digest()
-  //console.log('hash('+a.slice(0, 8).toString('hex')+', '+b.slice(0, 8).toString('hex')+') => '+h.slice(0, 8).toString('hex'))
-  //return h
 }
 
 class TreeHashFlat extends Blocks{
@@ -38,9 +36,6 @@ class TreeHashFlat extends Blocks{
   digestBlock () {
     this.tree[this.index] = hash(this.queue)
 
-//    console.log("DIGEST BLOCK", this.index, this.tree[this.index])
-//    this.maybeDigest(this.index-1)
-//    this.maybeDigest(this.index+1)
     this.index += 2
     this.queue = [];
     //and now hash the blocks above this block
@@ -56,18 +51,11 @@ class TreeHashFlat extends Blocks{
   
 
   rehash () {
-    //TODO: actually, a simpler way would be to just have functions iterated over a level,
-    //so an algorithm that looked just like the one in naive could be used.
-    for(var h = 1; h < Math.sqrt(this.tree.length); h++) {
-      for(var i = 1 << h; i < this.tree.length; i += (1 << (h+1))) {
-        if(height(i) == h) {
-          this.tree[i] = hash(this.tree[prev_branch(i)], this.getNextBranch(i))
-          //console.log('tree['+i+']', this.tree[i], h)
-        }
+    for(var h = 1; h <=  height(root(this.tree.length-1)); h++) {
+      for(var i = 1 << h; i < this.tree.length; i = next_sibling(i)) {
+        this.tree[i] = hash(this.tree[prev_branch(i)], this.getNextBranch(i))
       }
-      //check if this level of the tree has a straggler...
     }
-
   }
 
   digest () {
