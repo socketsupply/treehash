@@ -22,9 +22,10 @@ function height (n) {
 var evenness = height
 
 
-//find the base of the whole tree
-function root (length) {
-  return collect_branch(1, length, true)
+//get the index of the top hash, givin a maximum leaf
+//note: can also be called with tree.length-1 because that is the maximum leaf. 
+function root (last_leaf) {
+  return collect_branch(1, last_leaf, true)
 }
 
 //get index of first hash under branch
