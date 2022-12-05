@@ -6,7 +6,7 @@ var {collect, collect_end, next_branch, very_next_branch} = u
 var u = require('../util')
 
 //get the index of the top hash, givin a maximum leaf
-test('top', function (t) {
+test('root', function (t) {
   var inputs = [
     [1, 1],
     [3, 2],
@@ -19,9 +19,9 @@ test('top', function (t) {
   ]
 
   for(var i in inputs) {
-    //t.equal(u.rootIndex(inputs[i][0]), inputs[i][1])
     t.equal(u.root(inputs[i][0]), inputs[i][1])
   }
+
   t.end()
 })
 
