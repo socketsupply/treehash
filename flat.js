@@ -44,6 +44,9 @@ class TreeHashFlat extends Blocks{
   verify (start) {
   }
 
+  // returns the hashes needed to reconstruct the root hash of this tree
+  // for a tree instance that is only up to block `start`
+  // TODO (proofs for the end, or middle, figured this out in util collect methods already i think...)
   proof (start) {
     return collect(start + 2, this.tree.length).map(i => this.tree[i])
   }
