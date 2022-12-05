@@ -71,8 +71,7 @@ class TreeHashFlat extends Blocks{
   }
 
   digest () {
-    /*
-    if(false && this.queue.length) {
+    if(this.queue.length) {
       var i = this.index
       var q = this.queue
       this.digestBlock()
@@ -80,7 +79,6 @@ class TreeHashFlat extends Blocks{
       this.queue = q
       this.index = i
     }
-    */
     this.rehash()
     //console.log(this.tree)
     return this.tree[root(this.tree.length-1)]
