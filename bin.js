@@ -95,11 +95,8 @@ input.on('data', (data) => {
 
     else if(isProof) {
       var block_index = ~~+(opts.proof || value)
-//      if(block_index === 0)
-  //      throw new Error('cannot create proof for block zero, there must be preceding blocks')
 
       var leaf_index = block2leaf_index((opts.proof || value))
-      console.error({block_index, leaf_index})
       console.log(JSON.stringify({
         index: block_index+1,
         root: th.digest().toString('hex'),
