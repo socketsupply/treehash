@@ -1,3 +1,4 @@
+var fs = require('fs')
 var TreeHash = require('./')
 var TreeHashFlat = require('./flat')
 var opts = require('minimist')(process.argv.slice(2))
@@ -8,6 +9,10 @@ var input_name = opts._.shift()
 var input
 var value = opts._.shift()
 var block_size = 1024*1024
+function hex2buffer (h) {
+  return Buffer.from(h, 'hex')
+}
+
 var ALG = 'sha256'
 if(cmd === 'help' || opts.help) {
   console.error('usage:')
@@ -57,8 +62,22 @@ if (cmd === VERIFY) {
     th.update(d)
   })
   .on('end', () => {
-
-
+    //assert that the file length matches the proof's index
+    var proof = JSON.parse(fs.readFileSync(opts.proof || value))
+    if(proof.alg !== ALG)
+      throw new Error('mismatched proof algorithm, found:'+proof.alg+', expected:'+ALG)
+    if(proof.block_size !== block_size)
+      throw new Error('mismatched proof block_size, found:'+proof.block_size+', expected:'+block_size)
+    var proof_start = proof.index * block_size
+    if(th.length !== proof_start) {
+      console.error(
+        `input file size ${th.length} must match proof index(=${proof.index})*block_size(=${block_size})==${proof_start}.\n`)
+      process.exit(1)
+    }
+    var _root = th.verify(proof.proof.map(hex2buffer)).toString('hex')
+    if(_root != proof.root)
+      throw new Error('verify failed. expected:'+proof.root+', but got:'+_root)
+    console.error(_root)
   })
 
 
@@ -73,11 +92,16 @@ input.on('data', (data) => {
     var h = th.digest()
     if(isTree)
       console.log(print_tree(th.tree, opts))
+
     else if(isProof) {
       var block_index = ~~+(opts.proof || value)
-      var leaf_index = block2leaf_index(opts.proof || value)
+//      if(block_index === 0)
+  //      throw new Error('cannot create proof for block zero, there must be preceding blocks')
+
+      var leaf_index = block2leaf_index((opts.proof || value))
+      console.error({block_index, leaf_index})
       console.log(JSON.stringify({
-        index: leaf_index,
+        index: block_index+1,
         root: th.digest().toString('hex'),
         proof: th.proof(leaf_index).map(e=>e.toString('hex')),
         alg: ALG,
