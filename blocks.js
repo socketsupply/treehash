@@ -3,7 +3,10 @@ var empty = Buffer.from('')
 module.exports = class Blocks {
   constructor (block_size=1024*1024) {
     this.block_size = block_size
+    //tracks queue for current block
     this.len = 0
+    //used to track the total input size
+    this.length = 0
   }
   updateBlock (data) {
     throw new Error('subclass must implement updateBlock')
@@ -14,6 +17,7 @@ module.exports = class Blocks {
   update (data) {
     //XXX TODO, actually, we want to be able to add more data, so that streaming files are possible...
     while(data.length) {
+      this.length += data.length
       if(this.len + data.length < this.block_size) {
         this.updateBlock(data)
         this.len += data.length
