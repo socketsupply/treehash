@@ -112,4 +112,8 @@ function next_branch_with_promotion(i, length) {
 
 }
 
-module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end, next_branch_with_promotion, next_branch, prev_branch, next_sibling}
+function block2leaf_index (bi) {
+  return 1 + bi*2
+}
+
+module.exports = { /*uncles, */root, height, evenness, start, end, collect, collect_end, next_branch_with_promotion, next_branch, prev_branch, next_sibling, block2leaf_index}
