@@ -107,7 +107,12 @@ Lets generate a proof that block 0 (corresponding to branch 1) is part of thks f
 the proof contains a list of the hashes that are needed to reconstruct the root hash,
 given that you have the file up to the first block.
 
-also, save the proof
+> The matching the hashes in the proof with the hashes in the output of the tree command,
+> the proof is branches 3, 6, 12, 18. You know 1 already, because it is the hash of block 0.
+> so then 1+3=>2, 2+6=>4, 4+12=>8, 8+18=>8. And that's the root hash.
+
+But lets have the tool verify the proof,
+first save it in a file:
 ```
 > treehash proof rand.file 0 > proof.json
 ```
@@ -122,12 +127,43 @@ the head command can also be used
 head -c 1m rand.file > block0_rand.file
 ```
 
+note, because the hash of a block is just a plain sha256 hash,
+and this file is just a single block we can confirm it has the correct hash.
+```
+> shasum -a 256 block0_rand.file 
+08c14826c9041956426b0828b00813c20a5471ae45aec49ef8191ed0a4d1e7b8  block0_rand.file
+```
+
 now verify the proof that block0 is really a part of `47715cba8ddd34050f5f152362b9ab8e6cd8f09c4b479c9f27d81231adea29cc`
 ```
 > treehash verify block0_rand.file proof.json
 47715cba8ddd34050f5f152362b9ab8e6cd8f09c4b479c9f27d81231adea29cc
 ```
 if it output the same tophash, and didn't exit with an error, then they verification was successful.
+
+We shouldn't just check that it verifies a correct file, it would fool us if it just always did that!
+We need to see that an invalid file fails to verify.
+
+copy the file and change one byte (using dd)
+```
+> cp block0_rand.file block0_rand_invalid.file
+> dd if=/dev/zero of=block0_rand_invalid.file bs=1 seek=10 count=1 conv=notrunc
+```
+now run verify
+
+```
+> node bin.js verify block0_rand_invalid.file proof.json 
+/home/dominic/c/treehash/bin.js:79
+      throw new Error('verify failed. expected:'+proof.root+', but got:'+_root)
+      ^
+
+Error: verify failed. expected:47715cba8ddd34050f5f152362b9ab8e6cd8f09c4b479c9f27d81231adea29cc, but got:bc6b96984a86df646464f77eb9d17d8964e080f348921620fb5f5399572c20a2
+    at ReadStream.<anonymous> (/home/dominic/c/treehash/bin.js:79:13)
+    at ReadStream.emit (node:events:513:28)
+    at endReadableNT (node:internal/streams/readable:1359:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+
+```
 
 ### tree <input>
 
