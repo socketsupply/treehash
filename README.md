@@ -33,6 +33,9 @@ if you needed a proof for the start, that is different.
 
 ## cli
 
+A cli is provided, not so much because it's useful to have this as a CLI tool,
+but because it's helpful for understanding the algorithm, especially the `tree` command.
+
 ## example
 
 I generated a file full of 10mb of random data.
@@ -169,8 +172,65 @@ Error: verify failed. expected:47715cba8ddd34050f5f152362b9ab8e6cd8f09c4b479c9f2
 
 print the complete hash tree of the input file.
 
-### proof <input> <index>
+`|` connect child branches to parent branches, up to the root.
+(although it is not drawn for trailing branches)
+`==>` points to the root hash (which is always the largest power of 2)
 
-create a proof that that the block at <index> is part of the input file.
+supported options
+  * `--offsets` (shows the byte offset of the start of this block)
+  * `--branch_numbers` shows the number for the branch.
+    leaves are always odd. Even numbers are hashes of hashes.
+    The level in the tree corresponds to the number of factors of 2.
+
+thanks to Dave Cottlehuber for first explaining this algorithm to me.
+
+```
+ 1             08c14826 [0]
+ 2           1d531ce1
+ 3           | 6017b878 [2097152]
+ 4         00df9926
+ 5         | | 80d21867 [4194304]
+ 6         | 33422e6f
+ 7         |   596ff545 [6291456]
+ 8       0afbbebe
+ 9       | |   3e549a99 [8388608]
+10       | | bfc40606
+11       | | | 8fc6795a [10485760]
+12       | 102e108d
+13       |   | 6686c501 [12582912]
+14       |   ca4f7560
+15       |     575b1dac [14680064]
+16 ==> 47715cba
+17             5334c047 [16777216]
+18           c50255cd
+19             5c8a2a5d [18874368]
+```
+
+### proof <input> <block_index>
+
+Create a proof that data in `<input>`, up to and including `<block_index>` is part of the input file.
+This is done by outputting a minimal set of branch hashes such that if you know the file up to `<block_index>`,
+you will be able to recalculate the root hash.
+
+```
+{
+  "index": <integer >= 0>,
+  "root": <sha256 hash>,
+  "proof": [
+    <sha256 hash>,...
+  ],
+  "alg": "sha256",
+  "block_size": 1048576
+}
+```
+`alg` and `block_size` are currently hard coded, but will be checked and the verification will fail if not provided.
 
 ### verify <input> <proof>
+
+verifies that `<input>` is part of the file described in <proof>.
+note, this only works when the input is exactly the blocks described by proof.
+If the file is not the expected length then the verification will fail.
+
+### block <input> <block_inedx>
+
+dumps a particular block to standard output.
