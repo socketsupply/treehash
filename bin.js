@@ -30,6 +30,24 @@ const
   VERIFY = 'verify',
   APPEND = 'append'
 
+
+function verify(th, proof) {
+  if(proof.alg !== ALG)
+    throw new Error('mismatched proof algorithm, found:'+proof.alg+', expected:'+ALG)
+  if(proof.block_size !== block_size)
+    throw new Error('mismatched proof block_size, found:'+proof.block_size+', expected:'+block_size)
+  var proof_start = proof.index * block_size
+  if(th.length !== proof_start) {
+    throw new Error(
+      `input file size ${th.length} must match proof index(=${proof.index})*block_size(=${block_size})==${proof_start}.\n`)
+  }
+  var _root = th.verify(proof.proof.map(hex2buffer)).toString('hex')
+  if(_root != proof.root)
+    throw new Error('verify failed. expected:'+proof.root+', but got:'+_root)
+  return _root
+}
+
+
 var isTree = cmd === TREE
 var isProof = cmd === PROOF
 var th = isTree || isProof ? new TreeHashFlat() : new TreeHash()
@@ -63,20 +81,7 @@ if (cmd === VERIFY) {
   })
   .on('end', () => {
     //assert that the file length matches the proof's index
-    var proof = JSON.parse(fs.readFileSync(opts.proof || value))
-    if(proof.alg !== ALG)
-      throw new Error('mismatched proof algorithm, found:'+proof.alg+', expected:'+ALG)
-    if(proof.block_size !== block_size)
-      throw new Error('mismatched proof block_size, found:'+proof.block_size+', expected:'+block_size)
-    var proof_start = proof.index * block_size
-    if(th.length !== proof_start) {
-      console.error(
-        `input file size ${th.length} must match proof index(=${proof.index})*block_size(=${block_size})==${proof_start}.\n`)
-      process.exit(1)
-    }
-    var _root = th.verify(proof.proof.map(hex2buffer)).toString('hex')
-    if(_root != proof.root)
-      throw new Error('verify failed. expected:'+proof.root+', but got:'+_root)
+    var _root = verify(th, JSON.parse(fs.readFileSync(opts.proof || value)))
     console.error(_root)
   })
 
